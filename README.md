@@ -80,7 +80,7 @@ The candy machine can be created in the same exact way but the programId should 
 
 ### **Script for adding lockup settings**
 
-This script will create a lockup settings PDA and then set the lockup settings feature flag in the candy machine indicating that the additional accounts for lockup are required when minting. This can be placed into a ts file and run with `ts-node set-candy-machine-lockup-settings.tssetLockupSettings.ts`
+This script will create a lockup settings PDA and then set the lockup settings feature flag in the candy machine indicating that the additional accounts for lockup are required when minting. This can be placed into a ts file and run with `ts-node set-candy-machine-lockup-settings.ts`
 
 ```jsx
 // set-candy-machine-lockup-settings.ts
