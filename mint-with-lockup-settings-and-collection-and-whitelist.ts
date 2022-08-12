@@ -9,6 +9,7 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import {
+  CandyMachine,
   createMintNftInstruction,
   createSetCollectionDuringMintInstruction,
   PROGRAM_ID,
@@ -63,12 +64,16 @@ const mintNft = async () => {
       [Buffer.from("candy_machine"), candyMachineId.toBuffer()],
       PROGRAM_ID
     );
+  const candyMachine = await CandyMachine.fromAccountAddress(
+    connection,
+    candyMachineId
+  );
   const mintIx = createMintNftInstruction(
     {
       candyMachine: candyMachineId,
       candyMachineCreator: candyMachineCreatorId,
       payer: walletKeypair.publicKey,
-      wallet: walletKeypair.publicKey,
+      wallet: candyMachine.wallet,
       metadata: metadataId,
       mint: nftToMintKeypair.publicKey,
       mintAuthority: walletKeypair.publicKey,

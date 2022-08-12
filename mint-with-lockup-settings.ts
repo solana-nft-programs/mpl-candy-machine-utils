@@ -12,6 +12,7 @@ import {
 import {
   createMintNftInstruction,
   PROGRAM_ID,
+  CandyMachine,
 } from "@cardinal/mpl-candy-machine-utils";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -54,21 +55,21 @@ const mintNft = async () => {
     await programs.tokenManager.pda.findTokenManagerAddress(
       nftToMintKeypair.publicKey
     );
-  const [timeInvalidatorId] =
-    await programs.timeInvalidator.pda.findTimeInvalidatorAddress(
-      tokenManagerId
-    );
   const [candyMachineCreatorId, candyMachineCreatorIdBump] =
     await PublicKey.findProgramAddress(
       [Buffer.from("candy_machine"), candyMachineId.toBuffer()],
       PROGRAM_ID
     );
+  const candyMachine = await CandyMachine.fromAccountAddress(
+    connection,
+    candyMachineId
+  );
   const mintIx = createMintNftInstruction(
     {
       candyMachine: candyMachineId,
       candyMachineCreator: candyMachineCreatorId,
       payer: walletKeypair.publicKey,
-      wallet: walletKeypair.publicKey,
+      wallet: candyMachine.wallet,
       metadata: metadataId,
       mint: nftToMintKeypair.publicKey,
       mintAuthority: walletKeypair.publicKey,
