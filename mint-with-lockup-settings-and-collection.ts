@@ -1,4 +1,5 @@
 import {
+  AccountMeta,
   Connection,
   Keypair,
   PublicKey,
@@ -28,29 +29,20 @@ import {
 import { remainingAccountsForLockup } from "@cardinal/mpl-candy-machine-utils";
 import { utils } from "@project-serum/anchor";
 
+require("dotenv").config();
+
 const walletKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.AIRDROP_KEY || "")
 );
 const candyMachineId = new PublicKey("");
-const collectionMintKeypair = Keypair.generate();
+const collectionMintId = new PublicKey("");
 
 const connection = new Connection(
-  "https://api.mainnet-beta.solana.com",
+  process.env.RPC_URL || "https://api.mainnet-beta.solana.com",
   "confirmed"
 );
 
 const mintNft = async () => {
-  const nftToMintKeypair = Keypair.generate();
-  const tokenAccountToReceive = await Token.getAssociatedTokenAddress(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
-    nftToMintKeypair.publicKey,
-    walletKeypair.publicKey,
-    false
-  );
-
-  const metadataId = await Metadata.getPDA(nftToMintKeypair.publicKey);
-  const masterEditionId = await Edition.getPDA(nftToMintKeypair.publicKey);
   const [candyMachineCreatorId, candyMachineCreatorIdBump] =
     await PublicKey.findProgramAddress(
       [Buffer.from("candy_machine"), candyMachineId.toBuffer()],
@@ -60,6 +52,42 @@ const mintNft = async () => {
     connection,
     candyMachineId
   );
+
+  const nftToMintKeypair = Keypair.generate();
+  const tokenAccountToReceive = await Token.getAssociatedTokenAddress(
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+    nftToMintKeypair.publicKey,
+    walletKeypair.publicKey,
+    false
+  );
+
+  const remainingAccountsForPayment: AccountMeta[] = [];
+  if (candyMachine.tokenMint) {
+    const paymentTokenAccount = await Token.getAssociatedTokenAddress(
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
+      candyMachine.tokenMint,
+      walletKeypair.publicKey,
+      false
+    );
+    remainingAccountsForPayment.push(
+      {
+        pubkey: paymentTokenAccount,
+        isSigner: false,
+        isWritable: true,
+      },
+      {
+        pubkey: walletKeypair.publicKey,
+        isSigner: false,
+        isWritable: true,
+      }
+    );
+  }
+
+  const metadataId = await Metadata.getPDA(nftToMintKeypair.publicKey);
+  const masterEditionId = await Edition.getPDA(nftToMintKeypair.publicKey);
+
   const mintIx = createMintNftInstruction(
     {
       candyMachine: candyMachineId,
@@ -85,24 +113,21 @@ const mintNft = async () => {
       [Buffer.from("collection"), candyMachineId.toBuffer()],
       PROGRAM_ID
     );
-  const collectionMintMetadataId = await Metadata.getPDA(
-    collectionMintKeypair.publicKey
-  );
+  const collectionMintMetadataId = await Metadata.getPDA(collectionMintId);
   const collectionMasterEditionId = await MasterEdition.getPDA(
-    collectionMintKeypair.publicKey
+    collectionMintId
   );
 
   const [collectionAuthorityRecordId] = await PublicKey.findProgramAddress(
     [
       Buffer.from("metadata"),
       MetadataProgram.PUBKEY.toBuffer(),
-      collectionMintKeypair.publicKey.toBuffer(),
+      collectionMintId.toBuffer(),
       Buffer.from("collection_authority"),
       collectionPdaId.toBuffer(),
     ],
     MetadataProgram.PUBKEY
   );
-
   const setCollectionDuringMintIx = createSetCollectionDuringMintInstruction({
     candyMachine: candyMachineId,
     metadata: metadataId,
@@ -110,10 +135,10 @@ const mintNft = async () => {
     collectionPda: collectionPdaId,
     tokenMetadataProgram: MetadataProgram.PUBKEY,
     instructions: SYSVAR_INSTRUCTIONS_PUBKEY,
-    collectionMint: collectionMintKeypair.publicKey,
+    collectionMint: collectionMintId,
     collectionMasterEdition: collectionMasterEditionId,
     collectionMetadata: collectionMintMetadataId,
-    authority: walletKeypair.publicKey,
+    authority: candyMachine.authority,
     collectionAuthorityRecord: collectionAuthorityRecordId,
   });
 
@@ -121,7 +146,13 @@ const mintNft = async () => {
     {
       ...mintIx,
       keys: [
-        ...mintIx.keys,
+        ...mintIx.keys.map((k) =>
+          k.pubkey.equals(nftToMintKeypair.publicKey)
+            ? { ...k, isSigner: true }
+            : k
+        ),
+        // remaining accounts for paying in other toke
+        ...remainingAccountsForPayment,
         // remaining accounts for minting the token during execution
         {
           pubkey: tokenAccountToReceive,

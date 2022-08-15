@@ -51,10 +51,6 @@ const mintNft = async () => {
 
   const metadataId = await Metadata.getPDA(nftToMintKeypair.publicKey);
   const masterEditionId = await Edition.getPDA(nftToMintKeypair.publicKey);
-  const [tokenManagerId] =
-    await programs.tokenManager.pda.findTokenManagerAddress(
-      nftToMintKeypair.publicKey
-    );
   const [candyMachineCreatorId, candyMachineCreatorIdBump] =
     await PublicKey.findProgramAddress(
       [Buffer.from("candy_machine"), candyMachineId.toBuffer()],
