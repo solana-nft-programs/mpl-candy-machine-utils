@@ -18,7 +18,7 @@ import {
 import { BN, utils } from "@project-serum/anchor";
 
 const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
-  utils.bytes.bs58.decode(process.env.AIRDROP_KEY || "")
+  utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
 const connection = new Connection(
   "https://api.mainnet-beta.solana.com",
@@ -103,7 +103,10 @@ const createCandyMachine = async () => {
   tx.feePayer = candyMachineAuthorityKeypair.publicKey;
   tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
   tx.sign(candyMachineAuthorityKeypair, candyMachineKeypair);
-  await sendAndConfirmRawTransaction(connection, tx.serialize());
+  const txid = await sendAndConfirmRawTransaction(connection, tx.serialize());
+  console.log(
+    `Succesfully created candy machine with address ${candyMachineKeypair.publicKey.toString()} https://explorer.solana.com/tx/${txid}`
+  );
 };
 
 createCandyMachine();

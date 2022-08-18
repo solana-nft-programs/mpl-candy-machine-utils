@@ -12,7 +12,7 @@ import {
 import { BN, utils } from "@project-serum/anchor";
 
 const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
-  utils.bytes.bs58.decode(process.env.AIRDROP_KEY || "")
+  utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
 const connection = new Connection(
   "https://api.mainnet-beta.solana.com",

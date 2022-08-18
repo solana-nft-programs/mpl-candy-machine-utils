@@ -1,10 +1,10 @@
 import {
+  ComputeBudgetProgram,
   AccountMeta,
   Connection,
   Keypair,
   PublicKey,
   sendAndConfirmRawTransaction,
-  SystemProgram,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RECENT_BLOCKHASHES_PUBKEY,
@@ -18,7 +18,6 @@ import {
 } from "@cardinal/mpl-candy-machine-utils";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  MintLayout,
   Token,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
@@ -37,9 +36,13 @@ const walletKeypair = Keypair.fromSecretKey(
 const payerKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
+
+// devnet 5i2HLVhKuh3nhDLDfmCa9GNJ74wQhnRmg1ePeupzEYgq
+// mainnet 43rZ9uUVxKw2YJfDcmDekxdhwdge4vPqBRGqVPNYahLL
 const candyMachineId = new PublicKey(
   "5i2HLVhKuh3nhDLDfmCa9GNJ74wQhnRmg1ePeupzEYgq"
 );
+const MINT_INLINE = true;
 
 const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
@@ -107,6 +110,15 @@ const mintNft = async () => {
     );
   }
 
+  // MINTING INLINE
+  if (MINT_INLINE) {
+    remainingAccounts.push({
+      pubkey: tokenAccountToReceive,
+      isSigner: false,
+      isWritable: true,
+    });
+  }
+
   // add lockup settings
   const [lockupSettingsId] = await findLockupSettingsId(candyMachineId);
   const lockupSettings = await connection.getAccountInfo(lockupSettingsId);
@@ -121,42 +133,18 @@ const mintNft = async () => {
   }
 
   const instructions = [
-    SystemProgram.createAccount({
-      fromPubkey: walletKeypair.publicKey,
-      newAccountPubkey: nftToMintKeypair.publicKey,
-      space: MintLayout.span,
-      lamports: await connection.getMinimumBalanceForRentExemption(
-        MintLayout.span
-      ),
-      programId: TOKEN_PROGRAM_ID,
+    ComputeBudgetProgram.requestUnits({
+      units: 400000,
+      additionalFee: 0,
     }),
-    Token.createInitMintInstruction(
-      TOKEN_PROGRAM_ID,
-      nftToMintKeypair.publicKey,
-      0,
-      walletKeypair.publicKey,
-      walletKeypair.publicKey
-    ),
-    Token.createAssociatedTokenAccountInstruction(
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-      nftToMintKeypair.publicKey,
-      tokenAccountToReceive,
-      walletKeypair.publicKey,
-      walletKeypair.publicKey
-    ),
-    Token.createMintToInstruction(
-      TOKEN_PROGRAM_ID,
-      nftToMintKeypair.publicKey,
-      tokenAccountToReceive,
-      walletKeypair.publicKey,
-      [],
-      1
-    ),
     {
       ...mintIx,
       keys: [
-        ...mintIx.keys,
+        ...mintIx.keys.map((k) =>
+          k.pubkey.equals(nftToMintKeypair.publicKey)
+            ? { ...k, isSigner: true }
+            : k
+        ),
         // remaining accounts for locking
         ...remainingAccounts,
       ],

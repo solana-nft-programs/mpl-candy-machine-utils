@@ -32,7 +32,7 @@ import { utils } from "@project-serum/anchor";
 require("dotenv").config();
 
 const walletKeypair = Keypair.fromSecretKey(
-  utils.bytes.bs58.decode(process.env.AIRDROP_KEY || "")
+  utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
 const candyMachineId = new PublicKey("");
 const collectionMintId = new PublicKey("");
@@ -174,7 +174,10 @@ const mintNft = async () => {
   tx.feePayer = walletKeypair.publicKey;
   tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
   tx.sign(walletKeypair, nftToMintKeypair);
-  await sendAndConfirmRawTransaction(connection, tx.serialize());
+  const txid = await sendAndConfirmRawTransaction(connection, tx.serialize());
+  console.log(
+    `Succesfully minted token ${nftToMintKeypair.publicKey.toString()} from candy machine with address ${candyMachineId.toString()} https://explorer.solana.com/tx/${txid}`
+  );
 };
 
 mintNft();
