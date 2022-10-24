@@ -10,20 +10,26 @@ import {
   CONFIG_ARRAY_START,
   CONFIG_LINE_SIZE,
   createInitializeCandyMachineInstruction,
-  createSetLockupSettingsInstruction,
-  findLockupSettingsId,
-  LockupType,
+  createSetPermissionedSettingsInstruction,
+  findPermissionedSettingsId,
   PROGRAM_ID,
 } from "@cardinal/mpl-candy-machine-utils";
 import { BN, utils } from "@project-serum/anchor";
+import {
+  findAta,
+  withFindOrInitAssociatedTokenAccount,
+} from "@cardinal/token-manager";
+
+// for environment variables
+require("dotenv").config();
 
 const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
-const connection = new Connection(
-  "https://api.mainnet-beta.solana.com",
-  "confirmed"
+const PAYMENT_MINT = new PublicKey(
+  "tttvgrrNcjVZJS33UAcwTNs46pAidgsAgJqGfYGdZtG"
 );
+const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 const candyMachineKeypair = Keypair.generate();
 const ITEMS_AVAILABLE = 10;
 
@@ -32,10 +38,15 @@ const uuidFromConfigPubkey = (configAccount: PublicKey) => {
 };
 
 const createCandyMachine = async () => {
+  const candyMachineWalletId = await findAta(
+    PAYMENT_MINT,
+    candyMachineKeypair.publicKey,
+    true
+  );
   const initIx = createInitializeCandyMachineInstruction(
     {
       candyMachine: candyMachineKeypair.publicKey,
-      wallet: candyMachineAuthorityKeypair.publicKey,
+      wallet: candyMachineWalletId,
       authority: candyMachineAuthorityKeypair.publicKey,
       payer: candyMachineAuthorityKeypair.publicKey,
     },
@@ -45,7 +56,7 @@ const createCandyMachine = async () => {
         price: new BN(10),
         symbol: "SYM",
         sellerFeeBasisPoints: 10,
-        maxSupply: new BN(10),
+        maxSupply: new BN(100),
         isMutable: true,
         retainAuthority: true,
         goLiveDate: new BN(Date.now() / 1000),
@@ -64,19 +75,18 @@ const createCandyMachine = async () => {
       },
     }
   );
-  const [lockupSettingsId] = await findLockupSettingsId(
+  const [permissionedSettingsId] = await findPermissionedSettingsId(
     candyMachineKeypair.publicKey
   );
-  const lockupInitIx = createSetLockupSettingsInstruction(
+  const permissionedInitIx = createSetPermissionedSettingsInstruction(
     {
       candyMachine: candyMachineKeypair.publicKey,
       authority: candyMachineAuthorityKeypair.publicKey,
-      lockupSettings: lockupSettingsId,
+      permissionedSettings: permissionedSettingsId,
       payer: candyMachineAuthorityKeypair.publicKey,
     },
     {
-      lockupType: Number(LockupType.DurationSeconds),
-      number: new BN(5),
+      creator: candyMachineAuthorityKeypair.publicKey,
     }
   );
 
@@ -89,7 +99,17 @@ const createCandyMachine = async () => {
     2 * (Math.floor(ITEMS_AVAILABLE / 8) + 1);
   const rent_exempt_lamports =
     await connection.getMinimumBalanceForRentExemption(size);
+
+  await withFindOrInitAssociatedTokenAccount(
+    tx,
+    connection,
+    PAYMENT_MINT,
+    candyMachineKeypair.publicKey,
+    candyMachineAuthorityKeypair.publicKey,
+    true
+  );
   tx.instructions = [
+    ...tx.instructions,
     SystemProgram.createAccount({
       fromPubkey: candyMachineAuthorityKeypair.publicKey,
       newAccountPubkey: candyMachineKeypair.publicKey,
@@ -97,8 +117,18 @@ const createCandyMachine = async () => {
       lamports: rent_exempt_lamports,
       programId: PROGRAM_ID,
     }),
-    initIx,
-    lockupInitIx,
+    {
+      ...initIx,
+      keys: [
+        ...initIx.keys,
+        {
+          pubkey: PAYMENT_MINT,
+          isSigner: false,
+          isWritable: false,
+        },
+      ],
+    },
+    permissionedInitIx,
   ];
   tx.feePayer = candyMachineAuthorityKeypair.publicKey;
   tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;

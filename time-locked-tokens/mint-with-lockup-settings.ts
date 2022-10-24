@@ -31,6 +31,9 @@ import { remainingAccountsForLockup } from "@cardinal/mpl-candy-machine-utils";
 import { utils } from "@project-serum/anchor";
 import { findAta } from "@cardinal/token-manager";
 
+// for environment variables
+require("dotenv").config();
+
 const walletKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
@@ -38,7 +41,7 @@ const payerKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
 const candyMachineId = new PublicKey(
-  "5i2HLVhKuh3nhDLDfmCa9GNJ74wQhnRmg1ePeupzEYgq"
+  "CW77FkrKj5mD82krisymm7dcPoABZifPMmwzH2zQCKLj"
 );
 
 const connection = new Connection("https://api.devnet.solana.com", "confirmed");

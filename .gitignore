@@ -1,3 +1,6 @@
+# env file
+.env
+
 # Ignore Mac OS noise
 .DS_Store
 
