@@ -28,10 +28,10 @@
     tiny-invariant "^1.2.0"
     tslib "^2.3.1"
 
-"@cardinal/mpl-candy-machine-utils@^4.3.2-beta.12":
-  version "4.3.2-beta.12"
-  resolved "https://registry.yarnpkg.com/@cardinal/mpl-candy-machine-utils/-/mpl-candy-machine-utils-4.3.2-beta.12.tgz#2d53075b7c250a314abb7a509230fb759bd01ed1"
-  integrity sha512-+bXa01lpAzk9jD50FY3WIM6ClNVz6nvzXTWeo46lRE6RyoiWLC3Vqx8k9ctHEs3sCfDQDao8OsV7cErnyekyyQ==
+"@cardinal/mpl-candy-machine-utils@^4.4.1":
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/@cardinal/mpl-candy-machine-utils/-/mpl-candy-machine-utils-4.4.1.tgz#3c05662cce0ae944bdea82b5e25bbb533ae53b27"
+  integrity sha512-FKlgfs3VfXmruWCmYAA2mOOxK/aIb7lx2ukpPQKdscrCXRoHjFoH3d0wMNcewL3Y80XDSrtX2Y9yto9RfooSVA==
   dependencies:
     "@cardinal/token-manager" "1.4.6"
     "@metaplex-foundation/beet" "^0.4.0"
