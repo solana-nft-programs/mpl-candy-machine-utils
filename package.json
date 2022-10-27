@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@cardinal/common": "^3.0.1",
     "@cardinal/mpl-candy-machine-utils": "^4.4.1",
     "@cardinal/token-manager": "^1.4.9",
     "@metaplex-foundation/mpl-token-metadata": "1.2.5",

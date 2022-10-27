@@ -29,15 +29,17 @@ import {
 } from "@metaplex-foundation/mpl-token-metadata";
 import { remainingAccountsForLockup } from "@cardinal/mpl-candy-machine-utils";
 import { findAta } from "@cardinal/token-manager";
-import { utils, Wallet } from "@project-serum/anchor";
+import { Wallet } from "@project-serum/anchor";
 import { connectionFor } from "./connection";
+import { keypairFrom } from "./utils";
 
 dotenv.config();
 
-const walletKeypair = Keypair.fromSecretKey(
-  utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
-);
-const candyMachineId = new PublicKey("");
+const walletKeypair = keypairFrom(process.env.WALLET_KEYPAIR, "Wallet");
+const payerKeypair = process.env.PAYER_KEYPAIR
+  ? keypairFrom(process.env.PAYER_KEYPAIR, "Payer")
+  : walletKeypair;
+const candyMachineId = new PublicKey(process.env.CANDY_MACHINE_ID || "");
 const cluster = "devnet";
 
 export const mint = async (
@@ -137,6 +139,11 @@ export const mint = async (
     );
   }
 
+  console.log(
+    mintIx.keys.map((k) => k.pubkey.toString()),
+    remainingAccounts.map((r) => r.pubkey.toString())
+  );
+
   const instructions = [
     ComputeBudgetProgram.requestUnits({
       units: 400000,
@@ -172,9 +179,12 @@ export const mint = async (
 };
 
 const main = async () => {
-  await mint(new Wallet(walletKeypair), candyMachineId, cluster).then((d) =>
-    console.log(`Ouput: `, d)
-  );
+  await mint(
+    new Wallet(walletKeypair),
+    candyMachineId,
+    cluster,
+    new Wallet(payerKeypair)
+  ).then((d) => console.log(`Ouput: `, d));
 };
 
-main().catch((e) => console.log(`[error] ${e}`));
+main().catch((e) => console.log(`[error]`, e));
