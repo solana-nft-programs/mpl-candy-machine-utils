@@ -15,25 +15,41 @@ cd mpl-candy-machine-utils
 yarn
 ```
 
+## Setup
+
+Create a .env file and specify
+
+`WALLET_KEYPAIR=`
+
+`PAYER_KEYPAIR=`
+
+After creating a candy machine add
+
+`CANDY_MACHINE_ID=`
+
 ## Example Scripts
 
-`ts-node create-candy-machine.ts`
+`ts-node utils/create-candy-machine.ts`
 
 - This is a simple script to create a candy machine without lockup settings. Step 3 can then be used to add lockup settings or modify it later on
 
-`ts-node create-candy-machine-with-lockup-settings.ts`
+`ts-node time-locked-tokens/create-candy-machine-with-lockup-settings.ts`
 
 - This can be used to create a candy machine and set lockup settings on it in a single transaction
 
-`ts-node set-candy-machine-lockup-settings.ts`
+`ts-node time-locked-tokens/set-candy-machine-lockup-settings.ts`
 
 - This can be used to set lockup settings on an existing candy machine
 
-`ts-node mint-with-lockup-settings.ts`
+`tsnode mint.ts`
+
+- This is an example minting script
+
+`ts-node time-locked-tokens/mint-with-lockup-settings.ts`
 
 - This is an example minting from a specified wallet and what extra accounts need to be added for lockup settings to work
 
-`tsnode mint-with-lockup-settings-and-collection-and-whitelist.ts`
+`tsnode time-locked-tokens/mint-with-lockup-settings-and-collection-and-whitelist.ts`
 
 - This is an example minting with lockup settings and collections and whitelist settings
 - This also makes use of minting the token via CPI instead of via additional instructions in the transaction which is an optimization to reduce transaction size -- when this is done an extra account (recipientTokenAccount) must be added in remaining accounts AFTER whitelist/collection accounts and BEFORE lockup setttings accounts
