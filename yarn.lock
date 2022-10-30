@@ -41,10 +41,10 @@
     polished "^4.2.2"
     tslib "^2.4.0"
 
-"@cardinal/mpl-candy-machine-utils@^4.4.1":
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/@cardinal/mpl-candy-machine-utils/-/mpl-candy-machine-utils-4.4.1.tgz#3c05662cce0ae944bdea82b5e25bbb533ae53b27"
-  integrity sha512-FKlgfs3VfXmruWCmYAA2mOOxK/aIb7lx2ukpPQKdscrCXRoHjFoH3d0wMNcewL3Y80XDSrtX2Y9yto9RfooSVA==
+"@cardinal/mpl-candy-machine-utils@^4.4.3":
+  version "4.4.3"
+  resolved "https://registry.yarnpkg.com/@cardinal/mpl-candy-machine-utils/-/mpl-candy-machine-utils-4.4.3.tgz#d59f19c79b2641fcd3e3dba3d8b52b8e105006db"
+  integrity sha512-XyhTlAWxa7nZotJmCDu9aKuRm/5WzLeWdcl0UjxCi7yIL5BvtA66/t24jhkCfVtrvtGw3KJkf9OxmNrZhfFFDA==
   dependencies:
     "@cardinal/token-manager" "1.4.6"
     "@metaplex-foundation/beet" "^0.4.0"

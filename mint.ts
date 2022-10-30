@@ -16,6 +16,9 @@ import {
   PROGRAM_ID,
   CandyMachine,
   findLockupSettingsId,
+  findPermissionedSettingsId,
+  remainingAccountsForPermissioned,
+  createSetCollectionDuringMintInstruction,
 } from "@cardinal/mpl-candy-machine-utils";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -24,6 +27,7 @@ import {
 } from "@solana/spl-token";
 import {
   Edition,
+  MasterEdition,
   Metadata,
   MetadataProgram,
 } from "@metaplex-foundation/mpl-token-metadata";
@@ -40,6 +44,8 @@ const payerKeypair = process.env.PAYER_KEYPAIR
   ? keypairFrom(process.env.PAYER_KEYPAIR, "Payer")
   : walletKeypair;
 const candyMachineId = new PublicKey(process.env.CANDY_MACHINE_ID || "");
+let collectionMintKeypair: Keypair | null = null;
+
 const cluster = "devnet";
 
 export const mint = async (
@@ -139,11 +145,25 @@ export const mint = async (
     );
   }
 
-  console.log(
-    mintIx.keys.map((k) => k.pubkey.toString()),
-    remainingAccounts.map((r) => r.pubkey.toString())
+  // Permissioned settings
+  const [permissionedSettingsId] = await findPermissionedSettingsId(
+    candyMachineId
   );
+  const permissionedSettings = await connection.getAccountInfo(
+    permissionedSettingsId
+  );
+  if (permissionedSettings) {
+    console.log(`> Adding permissioned settings accounts`);
+    remainingAccounts.push(
+      ...(await remainingAccountsForPermissioned(
+        candyMachineId,
+        nftToMintKeypair.publicKey,
+        tokenAccountToReceive
+      ))
+    );
+  }
 
+  // Minting
   const instructions = [
     ComputeBudgetProgram.requestUnits({
       units: 400000,
@@ -162,6 +182,49 @@ export const mint = async (
       ],
     },
   ];
+
+  // Collections
+  if (collectionMintKeypair) {
+    const [collectionPdaId, _collectionPdaBump] =
+      await PublicKey.findProgramAddress(
+        [Buffer.from("collection"), candyMachineId.toBuffer()],
+        PROGRAM_ID
+      );
+    const collectionMintMetadataId = await Metadata.getPDA(
+      collectionMintKeypair.publicKey
+    );
+    const collectionMasterEditionId = await MasterEdition.getPDA(
+      collectionMintKeypair.publicKey
+    );
+
+    const [collectionAuthorityRecordId] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("metadata"),
+        MetadataProgram.PUBKEY.toBuffer(),
+        collectionMintKeypair.publicKey.toBuffer(),
+        Buffer.from("collection_authority"),
+        collectionPdaId.toBuffer(),
+      ],
+      MetadataProgram.PUBKEY
+    );
+
+    instructions.push(
+      createSetCollectionDuringMintInstruction({
+        candyMachine: candyMachineId,
+        metadata: metadataId,
+        payer: walletKeypair.publicKey,
+        collectionPda: collectionPdaId,
+        tokenMetadataProgram: MetadataProgram.PUBKEY,
+        instructions: SYSVAR_INSTRUCTIONS_PUBKEY,
+        collectionMint: collectionMintKeypair.publicKey,
+        collectionMasterEdition: collectionMasterEditionId,
+        collectionMetadata: collectionMintMetadataId,
+        authority: walletKeypair.publicKey,
+        collectionAuthorityRecord: collectionAuthorityRecordId,
+      })
+    );
+  }
+
   const tx = new Transaction();
   tx.instructions = instructions;
   tx.feePayer = payerId;

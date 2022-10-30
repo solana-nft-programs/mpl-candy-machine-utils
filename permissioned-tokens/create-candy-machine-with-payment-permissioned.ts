@@ -31,6 +31,7 @@ const PAYMENT_MINT = new PublicKey(
 );
 const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 const candyMachineKeypair = Keypair.generate();
+const TRANSFER_AUTHORITY = new PublicKey("");
 const ITEMS_AVAILABLE = 10;
 
 const uuidFromConfigPubkey = (configAccount: PublicKey) => {
@@ -55,8 +56,8 @@ const createCandyMachine = async () => {
         uuid: uuidFromConfigPubkey(candyMachineKeypair.publicKey),
         price: new BN(10),
         symbol: "SYM",
-        sellerFeeBasisPoints: 10,
-        maxSupply: new BN(100),
+        sellerFeeBasisPoints: 500,
+        maxSupply: new BN(2500),
         isMutable: true,
         retainAuthority: true,
         goLiveDate: new BN(Date.now() / 1000),
@@ -65,6 +66,11 @@ const createCandyMachine = async () => {
           {
             address: candyMachineKeypair.publicKey,
             verified: true,
+            share: 0,
+          },
+          {
+            address: candyMachineAuthorityKeypair.publicKey,
+            verified: false,
             share: 100,
           },
         ],
@@ -87,6 +93,7 @@ const createCandyMachine = async () => {
     },
     {
       creator: candyMachineAuthorityKeypair.publicKey,
+      transferAuthority: TRANSFER_AUTHORITY,
     }
   );
 
