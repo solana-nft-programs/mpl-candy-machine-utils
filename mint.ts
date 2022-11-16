@@ -19,6 +19,8 @@ import {
   findPermissionedSettingsId,
   remainingAccountsForPermissioned,
   createSetCollectionDuringMintInstruction,
+  findCcsSettingsId,
+  remainingAccountsForCcs,
 } from "@cardinal/mpl-candy-machine-utils";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -43,6 +45,8 @@ const walletKeypair = keypairFrom(process.env.WALLET_KEYPAIR, "Wallet");
 const payerKeypair = process.env.PAYER_KEYPAIR
   ? keypairFrom(process.env.PAYER_KEYPAIR, "Payer")
   : walletKeypair;
+
+const RULESET_NAME = "ruleset-no-checks";
 const candyMachineId = new PublicKey(process.env.CANDY_MACHINE_ID || "");
 let collectionMintKeypair: Keypair | null = null;
 
@@ -163,6 +167,24 @@ export const mint = async (
     );
   }
 
+  // CSS settings
+  const [cssSettingsId] = await findCcsSettingsId(candyMachineId);
+  const cssSettings = await connection.getAccountInfo(cssSettingsId);
+  if (cssSettings) {
+    console.log(`> Adding css settings accounts`);
+    remainingAccounts.push(
+      ...(await remainingAccountsForCcs(
+        connection,
+        wallet,
+        candyMachineId,
+        walletKeypair.publicKey,
+        nftToMintKeypair.publicKey,
+        tokenAccountToReceive,
+        RULESET_NAME
+      ))
+    );
+  }
+
   // Minting
   const instructions = [
     ComputeBudgetProgram.requestUnits({
@@ -230,9 +252,7 @@ export const mint = async (
   tx.feePayer = payerId;
   tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
   await wallet.signTransaction(tx);
-  if (payerWallet) {
-    await payerWallet.signTransaction(tx);
-  }
+  payerWallet && (await payerWallet.signTransaction(tx));
   await tx.partialSign(nftToMintKeypair);
   const txid = await sendAndConfirmRawTransaction(connection, tx.serialize());
   console.log(

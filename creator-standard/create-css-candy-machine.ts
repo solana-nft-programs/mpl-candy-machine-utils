@@ -10,11 +10,12 @@ import {
   CONFIG_ARRAY_START,
   CONFIG_LINE_SIZE,
   createInitializeCandyMachineInstruction,
-  createSetPermissionedSettingsInstruction,
-  findPermissionedSettingsId,
+  createSetCssSettingsInstruction,
+  findCcsSettingsId,
   PROGRAM_ID,
 } from "@cardinal/mpl-candy-machine-utils";
 import { BN, utils } from "@project-serum/anchor";
+import { findRulesetId } from "@cardinal/creator-standard";
 
 // for environment variables
 require("dotenv").config();
@@ -22,8 +23,13 @@ require("dotenv").config();
 const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
-const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+const clusterName = "devnet"; // or mainnet-beta
+const connection = new Connection(
+  `https://api.${clusterName}.solana.com`,
+  "confirmed"
+);
 const candyMachineKeypair = Keypair.generate();
+const RULESET_NAME = "ruleset-no-checks";
 const ITEMS_AVAILABLE = 100;
 
 const uuidFromConfigPubkey = (configAccount: PublicKey) => {
@@ -63,19 +69,20 @@ const createCandyMachine = async () => {
       },
     }
   );
-  const [permissionedSettingsId] = await findPermissionedSettingsId(
+  const [ccsSettingsId] = await findCcsSettingsId(
     candyMachineKeypair.publicKey
   );
-  const permissionedInitIx = createSetPermissionedSettingsInstruction(
+  const rulesetId = findRulesetId(RULESET_NAME);
+  const ccsInitIx = createSetCssSettingsInstruction(
     {
       candyMachine: candyMachineKeypair.publicKey,
       authority: candyMachineAuthorityKeypair.publicKey,
-      permissionedSettings: permissionedSettingsId,
+      ccsSettings: ccsSettingsId,
       payer: candyMachineAuthorityKeypair.publicKey,
     },
     {
       creator: candyMachineAuthorityKeypair.publicKey,
-      transferAuthority: null,
+      ruleset: rulesetId,
     }
   );
 
@@ -97,14 +104,14 @@ const createCandyMachine = async () => {
       programId: PROGRAM_ID,
     }),
     initIx,
-    permissionedInitIx,
+    ccsInitIx,
   ];
   tx.feePayer = candyMachineAuthorityKeypair.publicKey;
   tx.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
   tx.sign(candyMachineAuthorityKeypair, candyMachineKeypair);
   const txid = await sendAndConfirmRawTransaction(connection, tx.serialize());
   console.log(
-    `Succesfully created candy machine with address ${candyMachineKeypair.publicKey.toString()} https://explorer.solana.com/tx/${txid}`
+    `Succesfully created candy machine with address ${candyMachineKeypair.publicKey.toString()} https://explorer.solana.com/tx/${txid}?cluster=devnet`
   );
 };
 
