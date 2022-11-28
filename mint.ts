@@ -35,9 +35,9 @@ import {
 } from "@metaplex-foundation/mpl-token-metadata";
 import { remainingAccountsForLockup } from "@cardinal/mpl-candy-machine-utils";
 import { findAta } from "@cardinal/token-manager";
-import { Wallet } from "@project-serum/anchor";
 import { connectionFor } from "./connection";
 import { keypairFrom } from "./utils";
+import { Wallet } from "@project-serum/anchor/dist/cjs/provider";
 
 dotenv.config();
 
