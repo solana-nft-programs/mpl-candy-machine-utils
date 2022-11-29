@@ -11,6 +11,7 @@ import {
   LockupType,
 } from "@cardinal/mpl-candy-machine-utils";
 import { BN, utils } from "@project-serum/anchor";
+import { connectionFor } from "../connection";
 
 // for environment variables
 require("dotenv").config();
@@ -18,7 +19,8 @@ require("dotenv").config();
 const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
-const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+const cluster = "devnet";
+const connection = connectionFor(cluster);
 const candyMachineId = new PublicKey(
   process.env.PERMISSIONED_CANDY_MACHINE_ID || ""
 );
@@ -38,6 +40,7 @@ const addLockupSettings = async () => {
       },
       {
         creator: new Keypair().publicKey,
+        transferAuthority: null,
       }
     )
   );

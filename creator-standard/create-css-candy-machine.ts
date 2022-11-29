@@ -16,6 +16,7 @@ import {
 } from "@cardinal/mpl-candy-machine-utils";
 import { BN, utils } from "@project-serum/anchor";
 import { findRulesetId } from "@cardinal/creator-standard";
+import { connectionFor } from "../connection";
 
 // for environment variables
 require("dotenv").config();
@@ -23,13 +24,9 @@ require("dotenv").config();
 const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
-const clusterName = "devnet"; // or mainnet-beta
-const connection = new Connection(
-  `https://api.${clusterName}.solana.com`,
-  "confirmed"
-);
+const cluster = "devnet";
+const connection = connectionFor(cluster);
 const candyMachineKeypair = Keypair.generate();
-const RULESET_NAME = "ruleset-no-checks";
 const ITEMS_AVAILABLE = 100;
 
 const uuidFromConfigPubkey = (configAccount: PublicKey) => {
@@ -72,7 +69,7 @@ const createCandyMachine = async () => {
   const [ccsSettingsId] = await findCcsSettingsId(
     candyMachineKeypair.publicKey
   );
-  const rulesetId = findRulesetId(RULESET_NAME);
+  const rulesetId = findRulesetId();
   const ccsInitIx = createSetCssSettingsInstruction(
     {
       candyMachine: candyMachineKeypair.publicKey,

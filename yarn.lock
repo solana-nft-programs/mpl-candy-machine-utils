@@ -52,10 +52,10 @@
     "@solana/spl-token" "^0.3.5"
     "@solana/web3.js" "^1.66.2"
 
-"@cardinal/creator-standard@^1.1.20":
-  version "1.1.20"
-  resolved "https://registry.yarnpkg.com/@cardinal/creator-standard/-/creator-standard-1.1.20.tgz#b7df7c9fa6ab94940bcf8d8c1776d57c73759718"
-  integrity sha512-r2mWkrjRR5CQMZ6kAvttIdMQQrC/EhxWiFm41kx2/e17NrzxGRmP87cPw8a4Fs11FBltX6hFKoJ8fdxa+Z2uAA==
+"@cardinal/creator-standard@^2.1.8":
+  version "2.1.8"
+  resolved "https://registry.yarnpkg.com/@cardinal/creator-standard/-/creator-standard-2.1.8.tgz#9876aac59b1a065a9ce474fd9358d328a5985c78"
+  integrity sha512-vAZ3xKSfw205FdRdIHXMxamtVkQ1BmZqtQm77jTSmdCVkxe+Nk9ofDKymoQA/aPsAJa18+CW1Lhen20LU0St2w==
   dependencies:
     "@metaplex-foundation/rustbin" "^0.3.1"
     "@metaplex-foundation/solita" "^0.12.2"

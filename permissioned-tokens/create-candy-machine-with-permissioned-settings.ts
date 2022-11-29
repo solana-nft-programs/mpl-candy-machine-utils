@@ -15,6 +15,7 @@ import {
   PROGRAM_ID,
 } from "@cardinal/mpl-candy-machine-utils";
 import { BN, utils } from "@project-serum/anchor";
+import { connectionFor } from "../connection";
 
 // for environment variables
 require("dotenv").config();
@@ -22,7 +23,8 @@ require("dotenv").config();
 const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
-const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+const cluster = "devnet";
+const connection = connectionFor(cluster);
 const candyMachineKeypair = Keypair.generate();
 const ITEMS_AVAILABLE = 100;
 

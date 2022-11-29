@@ -5,7 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@cardinal/common": "^3.0.1",
-    "@cardinal/creator-standard": "^1.1.20",
+    "@cardinal/creator-standard": "^2.1.8",
     "@cardinal/mpl-candy-machine-utils": "^4.5.0",
     "@cardinal/token-manager": "^1.4.9",
     "@metaplex-foundation/mpl-token-metadata": "1.2.5",

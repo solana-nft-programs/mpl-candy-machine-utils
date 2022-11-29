@@ -10,14 +10,13 @@ import {
   LockupType,
 } from "@cardinal/mpl-candy-machine-utils";
 import { BN, utils } from "@project-serum/anchor";
+import { connectionFor } from "../connection";
 
 const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
   utils.bytes.bs58.decode(process.env.WALLET_KEYPAIR || "")
 );
-const connection = new Connection(
-  "https://api.mainnet-beta.solana.com",
-  "confirmed"
-);
+const cluster = "devnet";
+const connection = connectionFor(cluster);
 const candyMachineId = Keypair.generate().publicKey;
 
 const addLockupSettings = async () => {

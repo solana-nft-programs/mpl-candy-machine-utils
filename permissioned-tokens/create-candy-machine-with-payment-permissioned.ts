@@ -19,6 +19,7 @@ import {
   findAta,
   withFindOrInitAssociatedTokenAccount,
 } from "@cardinal/token-manager";
+import { connectionFor } from "../connection";
 
 // for environment variables
 require("dotenv").config();
@@ -29,7 +30,8 @@ const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
 const PAYMENT_MINT = new PublicKey(
   "tttvgrrNcjVZJS33UAcwTNs46pAidgsAgJqGfYGdZtG"
 );
-const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+const cluster = "devnet";
+const connection = connectionFor(cluster);
 const candyMachineKeypair = Keypair.generate();
 const TRANSFER_AUTHORITY = new PublicKey("");
 const ITEMS_AVAILABLE = 10;

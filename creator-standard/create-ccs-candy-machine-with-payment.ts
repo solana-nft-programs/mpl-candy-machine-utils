@@ -20,6 +20,7 @@ import {
   withFindOrInitAssociatedTokenAccount,
 } from "@cardinal/token-manager";
 import { findRulesetId } from "@cardinal/creator-standard";
+import { connectionFor } from "../connection";
 
 // for environment variables
 require("dotenv").config();
@@ -30,13 +31,9 @@ const candyMachineAuthorityKeypair = Keypair.fromSecretKey(
 const PAYMENT_MINT = new PublicKey(
   "tttvgrrNcjVZJS33UAcwTNs46pAidgsAgJqGfYGdZtG"
 );
-const clusterName = "devnet"; // or mainnet-beta
-const connection = new Connection(
-  `https://api.${clusterName}.solana.com`,
-  "confirmed"
-);
+const cluster = "devnet";
+const connection = connectionFor(cluster);
 const candyMachineKeypair = Keypair.generate();
-const RULESET_NAME = "ruleset-no-checks";
 const ITEMS_AVAILABLE = 10;
 
 const uuidFromConfigPubkey = (configAccount: PublicKey) => {
@@ -86,7 +83,7 @@ const createCandyMachine = async () => {
       },
     }
   );
-  const rulesetId = findRulesetId(RULESET_NAME);
+  const rulesetId = findRulesetId();
   const [cssSettingsId] = await findCcsSettingsId(
     candyMachineKeypair.publicKey
   );
@@ -148,7 +145,7 @@ const createCandyMachine = async () => {
   tx.sign(candyMachineAuthorityKeypair, candyMachineKeypair);
   const txid = await sendAndConfirmRawTransaction(connection, tx.serialize());
   console.log(
-    `Succesfully created candy machine with address ${candyMachineKeypair.publicKey.toString()} https://explorer.solana.com/tx/${txid}?cluster=${clusterName}`
+    `Succesfully created candy machine with address ${candyMachineKeypair.publicKey.toString()} https://explorer.solana.com/tx/${txid}?cluster=${cluster}`
   );
 };
 

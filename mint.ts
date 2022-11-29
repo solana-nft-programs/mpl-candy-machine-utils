@@ -37,7 +37,7 @@ import { remainingAccountsForLockup } from "@cardinal/mpl-candy-machine-utils";
 import { findAta } from "@cardinal/token-manager";
 import { connectionFor } from "./connection";
 import { keypairFrom } from "./utils";
-import { Wallet } from "@project-serum/anchor/dist/cjs/provider";
+import { Wallet } from "@project-serum/anchor";
 
 dotenv.config();
 
@@ -46,7 +46,6 @@ const payerKeypair = process.env.PAYER_KEYPAIR
   ? keypairFrom(process.env.PAYER_KEYPAIR, "Payer")
   : walletKeypair;
 
-const RULESET_NAME = "ruleset-no-checks";
 const candyMachineId = new PublicKey(process.env.CANDY_MACHINE_ID || "");
 let collectionMintKeypair: Keypair | null = null;
 
@@ -180,7 +179,7 @@ export const mint = async (
         walletKeypair.publicKey,
         nftToMintKeypair.publicKey,
         tokenAccountToReceive,
-        RULESET_NAME
+        ""
       ))
     );
   }
