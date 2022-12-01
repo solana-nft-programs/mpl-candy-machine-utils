@@ -21,6 +21,7 @@ import {
   createSetCollectionDuringMintInstruction,
   findCcsSettingsId,
   remainingAccountsForCcs,
+  CCSSettings,
 } from "@cardinal/mpl-candy-machine-utils";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -49,7 +50,7 @@ const payerKeypair = process.env.PAYER_KEYPAIR
 const candyMachineId = new PublicKey(process.env.CANDY_MACHINE_ID || "");
 let collectionMintKeypair: Keypair | null = null;
 
-const cluster = "devnet";
+const cluster = "mainnet";
 
 export const mint = async (
   wallet: Wallet,
@@ -170,13 +171,17 @@ export const mint = async (
   const [cssSettingsId] = await findCcsSettingsId(candyMachineId);
   const cssSettings = await connection.getAccountInfo(cssSettingsId);
   if (cssSettings) {
+    const ccsSettingsData = await CCSSettings.fromAccountAddress(
+      connection,
+      cssSettingsId
+    );
     console.log(`> Adding css settings accounts`);
     remainingAccounts.push(
       ...(await remainingAccountsForCcs(
         connection,
         wallet,
         candyMachineId,
-        walletKeypair.publicKey,
+        ccsSettingsData.creator,
         nftToMintKeypair.publicKey,
         tokenAccountToReceive,
         ""
