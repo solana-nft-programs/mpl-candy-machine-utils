@@ -1,7 +1,5 @@
 # See notion for more in depth details
 
-https://cardinal-labs.notion.site/Freeze-Authority-Candy-Machine-3f4ed075a50b46b98a9ad9ac9b5347f5
-
 # Getting Started
 
 All example scripts here can be run using `ts-node`
@@ -10,7 +8,6 @@ All example scripts here can be run using `ts-node`
 
 ```
 npm install -g ts-node
-git clone https://github.com/cardinal-labs/mpl-candy-machine-utils.git
 cd mpl-candy-machine-utils
 yarn
 ```
@@ -60,8 +57,6 @@ This document explains how to add “**LockupSettings**” to a candy machine.
 
 LockupSettings allows for specifying a time-based lockup after mint. It supports duration, locking the token for X seconds after it is minted, or expiration allowing for a set datetime for all tokens to be released.
 
-This makes use of a different protocol called token-manager to handle the lockup and release. More info can be found here: [https://github.com/cardinal-labs/cardinal-token-manager](https://github.com/cardinal-labs/cardinal-token-manager).
-
 **There are a few use cases for this:**
 
 1. Collections that do NOT want their collection being listed on marketplaces before the mint is over.
@@ -71,14 +66,6 @@ This makes use of a different protocol called token-manager to handle the lockup
 **PR to Metaplex:** https://github.com/metaplex-foundation/metaplex-program-library/pull/511/files
 
 **Deployed Candy Machine:** [https://explorer.solana.com/address/ccmpgw68x3NJmNPePFrTm6TsKCEYUVhF8rEAVL9rSDd](https://explorer.solana.com/address/ccmpgw68x3NJmNPePFrTm6TsKCEYUVhF8rEAVL9rSDd)
-
-**JS Package for using Freeze Authority CM:** @cardinal/mpl-candy-machine-utils
-
-[https://www.npmjs.com/package/@cardinal/mpl-candy-machine-utils](https://www.npmjs.com/package/@cardinal/mpl-candy-machine-utils)
-
-**Example code snippets and scripts**
-
-[https://github.com/cardinal-labs/mpl-candy-machine-utils](https://github.com/cardinal-labs/mpl-candy-machine-utils)
 
 ## Implementing Freeze Authority CM:
 
@@ -91,8 +78,6 @@ High level steps
 ### **Creating candy machine**
 
 The candy machine can be created in the same exact way but the programId should be as specified above.
-
-[https://github.com/cardinal-labs/mpl-candy-machine-utils/blob/main/create-candy-machine-with-lockup-settings.ts](https://github.com/cardinal-labs/mpl-candy-machine-utils/blob/main/create-candy-machine-with-lockup-settings.ts)
 
 ### **Script for adding lockup settings**
 
@@ -107,11 +92,6 @@ import {
   sendAndConfirmRawTransaction,
   Transaction,
 } from "@solana/web3.js";
-import {
-  createSetLockupSettingsInstruction,
-  findLockupSettingsId,
-  LockupType,
-} from "@cardinal/mpl-candy-machine-utils";
 import { BN } from "@project-serum/anchor";
 
 const candyMachineAuthorityKeypair = Keypair.generate();
@@ -159,12 +139,6 @@ addLockupSettings();
 // time_invalidator
 // time_invalidator_program
 // token_manager_program
-```
-
-There can be found using
-
-```jsx
-import { remainingAccountsForLockup } from "@cardinal/mpl-candy-machine-utils";
 ```
 
 ### **Appendix:**
